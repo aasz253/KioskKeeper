@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Reports - KioskKeeper{% endblock %}
+{% block content %}
+<h1 style="margin-bottom:1.5rem;">Reports</h1>
+
+<div class="report-section">
+    <div class="card">
+        <div class="section-title">
+            <span>Export Reports</span>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+            <a href="/api/reports/export/csv?type=products" class="btn btn-primary">Download Products CSV</a>
+            <a href="/api/reports/export/csv?type=transactions" class="btn btn-primary">Download Transactions CSV</a>
+            <a href="/api/reports/export/csv?type=low-stock" class="btn btn-danger">Download Low Stock CSV</a>
+        </div>
+    </div>
+</div>
+
+<div class="report-section">
+    <div class="card">
+        <div class="section-title"><span>Low Stock Report</span></div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr><th>Name</th><th>Category</th><th>Current Qty</th><th>Reorder Level</th><th>Unit Price</th></tr>
+                </thead>
+                <tbody id="lowStockTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="report-section">
+    <div class="card">
+        <div class="section-title"><span>Daily Report</span></div>
+        <div class="filter-row">
+            <input type="date" id="reportDate" value="{{ now.strftime('%Y-%m-%d') if now else '' }}" onchange="loadDailyReport()">
+            <button class="btn btn-sm btn-primary" onclick="loadDailyReport()">Load</button>
+        </div>
+        <div id="dailyReport" style="margin-top:1rem;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadLowStock() {
+    const res = await fetch('/api/reports/low-stock');
+    const items = await res.json();
+    const tbody = document.getElementById('lowStockTable');
+    if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No low stock items</td></tr>';
+        return;
+    }
+    tbody.innerHTML = items.map(i => `
+        <tr class="low-stock">
+            <td>${i.name}</td>
+            <td>${i.category}</td>
+            <td>${i.quantity}</td>
+            <td>${i.reorder_level}</td>
+            <td>KSh${i.unit_price.toFixed(2)}</td>
+        </tr>
+    `).join('');
+}
+
+async function loadDailyReport() {
+    const date = document.getElementById('reportDate').value;
+    if (!date) return;
+    const res = await fetch(`/api/reports/daily?date=${date}`);
+    const data = await res.json();
+    const div = document.getElementById('dailyReport');
+    div.innerHTML = `
+        <div class="summary-cards">
+            <div class="card card-stat"><div class="value">${data.total_sales}</div><div class="label">Sales</div></div>
+            <div class="card card-stat success"><div class="value">${data.total_restocks}</div><div class="label">Restocks</div></div>
+            <div class="card card-stat"><div class="value">${data.units_sold}</div><div class="label">Units Sold</div></div>
+            <div class="card card-stat success"><div class="value">${data.units_restocked}</div><div class="label">Units Restocked</div></div>
+        </div>
+        ${data.transactions.length ? `
+        <table>
+            <thead><tr><th>Time</th><th>Product</th><th>Type</th><th>Quantity</th></tr></thead>
+            <tbody>
+                ${data.transactions.map(t => `
+                <tr>
+                    <td>${new Date(t.date).toLocaleTimeString()}</td>
+                    <td>${t.product_name}</td>
+                    <td>${t.type === 'sale' ? '↓ Sale' : '↑ Restock'}</td>
+                    <td>${t.quantity}</td>
+                </tr>`).join('')}
+            </tbody>
+        </table>` : '<p class="empty-state">No transactions for this date</p>'}
+    `;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadLowStock();
+    loadDailyReport();
+});
+</script>
+{% endblock %}
