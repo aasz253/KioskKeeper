@@ -1,5 +1,7 @@
 # KioskKeeper – Offline Inventory Management
 
+live here https://aasz.pythonanywhere.com/
+
 A lightweight web application for small kiosk/shop owners to manage inventory, track stock levels, and receive low-stock alerts. Works fully offline with SQLite.
 
 ## Features
