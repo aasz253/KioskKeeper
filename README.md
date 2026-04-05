@@ -13,6 +13,7 @@ A lightweight web application for small kiosk/shop owners to manage inventory, t
 - **Reports** – Daily stock reports, low stock reports, CSV export
 - **Dark Mode** – Toggle with persistent preference
 - **Offline-First** – SQLite database, no internet required
+- **PWA Support** – Installable app with service worker caching
 
 ## Quick Start
 
@@ -65,8 +66,11 @@ kioskkeeper/
 └── static/
     ├── css/
     │   └── style.css   # Responsive styles + dark mode
-    └── js/
-        └── app.js      # Shared JavaScript utilities
+    ├── js/
+    │   └── app.js      # Shared JavaScript utilities
+    ├── icons/          # PWA icons
+    ├── manifest.json   # PWA manifest
+    └── sw.js           # Service worker
 ```
 
 ## API Endpoints
