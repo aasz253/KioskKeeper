@@ -11,8 +11,23 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
+SEED_PRODUCTS = [
+    {"name": "Safaricom Airtime 50", "category": "Airtime", "quantity": 100, "unit_price": 50.0, "reorder_level": 20},
+    {"name": "Airtel Airtime 100", "category": "Airtime", "quantity": 80, "unit_price": 100.0, "reorder_level": 15},
+    {"name": "KPLC Token 500", "category": "Electricity Tokens", "quantity": 5, "unit_price": 500.0, "reorder_level": 10},
+    {"name": "KPLC Token 1000", "category": "Electricity Tokens", "quantity": 3, "unit_price": 1000.0, "reorder_level": 5},
+    {"name": "Fresh Milk 500ml", "category": "Milk", "quantity": 24, "unit_price": 65.0, "reorder_level": 10},
+    {"name": "Milk Powder 400g", "category": "Milk", "quantity": 8, "unit_price": 450.0, "reorder_level": 5},
+    {"name": "White Bread", "category": "Bread", "quantity": 15, "unit_price": 55.0, "reorder_level": 10},
+    {"name": "Brown Bread", "category": "Bread", "quantity": 4, "unit_price": 60.0, "reorder_level": 8},
+]
+
 with app.app_context():
     db.create_all()
+    if Product.query.count() == 0:
+        for data in SEED_PRODUCTS:
+            db.session.add(Product(**data))
+        db.session.commit()
 
 
 @app.route("/")
